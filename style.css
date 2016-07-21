@@ -1,0 +1,107 @@
+/* debug
+
+div{
+	border:solid 0.1px blue!important;
+}
+table{
+	border:solid 1px yellow!important;
+}
+td{
+	border:solid 0.1px red!important;
+}
+*/
+
+.student_submissions{
+    border-top: 5px double #d3d3d3;
+    display:table;
+	width:100%;
+}
+.student_submissions > div{
+	display:table-cell;
+}
+.student_submissions h4{
+	font-size:100%!important;
+}
+.backto_list{
+	margin-top:10px!important;
+}
+.student_name{
+	width:25%;	
+}
+.studnet_grade{
+	border-top: 0.1px solid #d3d3d3;
+}
+.voicerec_editgrade_button{
+	margin-right:10px!important;
+	margin-top:10px!important;
+	
+}
+#rectimer_block{
+	margin:10px 0px!important;
+}
+#rectime_timer{
+	margin:10px 20px!important;	
+	
+	
+}
+.late_submit{
+	color:red;
+	font-weight :bold;
+	font-size:90%;	
+}
+.late_submit:before{
+	content:'late! ';
+}
+#submittedvoicelocked{
+}
+#alternate_upload{
+	display:none;
+}
+
+.not_changed{
+	color:red!important;
+}
+#voicerec_rec{
+	color:red;
+}
+#voicerec_rec_comment{
+	height:2em;
+	
+}
+#userrecedlist{
+	border: 0.1px solid #d3d3d3;
+	padding:5px;
+}
+.voicerec_submitted_voice{
+	width:100%;
+}
+.voicerec_submitted_voice td{
+	width:30%;
+}
+.teacher_comment{
+	border:solid 0.1px #d3d3d3;
+	padding:10px;
+}
+
+/* student submit voice table header*/
+.voicerec_ssvth{
+	border-top:5px double #d3d3d3;	
+}
+
+#studentlist{
+	margin-top:20px;
+	padding-top:20px;
+}
+#gradeform{
+	border:solid 1px #d3d3d3;
+	padding:20px;
+	
+}
+
+#gradeform .voicerec_submitted_voice{
+	margin:20px;
+	
+}
+#gradeform .voicerec_submitted_voice td{
+	/*border:solid 0.1px #d3d3d3;*/
+}
