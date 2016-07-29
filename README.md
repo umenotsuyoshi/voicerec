@@ -14,7 +14,7 @@ Adobe Flashも含めて、Java アプレットなどのブラウザプラグイ�
 Moodle2.7以降で動作します。  
 PCではChrome、Firefox、Operaで確認しています。Edge、IE、Safariでは動作しません。  
 スマホ、タブレットでは、 Android上のChromeなどでも動作しますが、現在のところiOS上のブラウザは全て動作しません。  
-録音出来る、出来ないはブラウザ側のAPIの実装によって状況がかわりますので、最新の状況は、http://caniuse.com/（ブラウザの実装状況サイト）でMediaRecorderをご覧ください。  
+録音出来る、出来ないはブラウザ側のAPIの実装によって状況がかわりますので、最新の状況は、ブラウザの実装状況サイトでMediaRecorderをご覧ください。  http://caniuse.com/
 また、ChromeやOperaはサーバがHTTPSでないと動作しなくなりました。サーバがHTTPの場合は、Firefoxでお試しください。  
 
 ##インストール方法

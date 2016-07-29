@@ -424,7 +424,7 @@ class mod_voicerec_grade_form extends moodleform {
     function validation($data, $files) {
         $errors = parent::validation($data, $files);
         if(0<= $data['grade'] && $data['grade'] <= 100){
-            return $errors;
+        	return $errors;
         }else{
             $error['grade'] = get_string('gradeerror', 'voicerec');
             return $error;

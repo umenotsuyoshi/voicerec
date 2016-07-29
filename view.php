@@ -64,7 +64,7 @@ $PAGE->set_heading(format_string($course->fullname));
 $PAGE->requires->jquery();
 $PAGE->requires->js_init_call('M.mod_voicerec.init',array($voicerec->maxduration));
 $PAGE->requires->strings_for_js(
-        array('changebrowser','inputrectitle','timeoutmessage','notavailable','submissionlocked','reachedupperlimit'), 
+        array('cannotsumit','changeserver','changebrowser','inputrectitle','timeoutmessage','notavailable','submissionlocked','reachedupperlimit'), 
         'voicerec');// Javascriptで使用する言語パック準備
 
 // ここまでテンプレートどおり

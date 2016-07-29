@@ -49,7 +49,7 @@ else {
 $PAGE->set_url('/course/view.php', array('id' => $id));
 $cansubmit = has_capability('mod/voicerec:submit', $context);
 if (!$cansubmit) {
-    print 'notavailable';
+    print 'cannotsumit';
     die;
 }
 $cangrade = false;

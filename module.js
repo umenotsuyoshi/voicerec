@@ -46,11 +46,12 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	    			$('#voicerec_rec').removeAttr('disabled');
 	    			mediaStream = stream;
 	    		}, function(err) {
+					console.log(e);
 	    			alert(err.name ? err.name : err);
 	    		});
 	    	}catch(e){
 				console.log(e);
-				alert(M.str.voicerec.changebrowser);
+				browser_error(e);
 	    	}
 	    }else{
 			$('#voicerec_rec').attr('disabled','disabled');
@@ -59,29 +60,55 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	    } 
 	});
 	/**
+	 * getUserMediaはChorm, Operaの場合は、httpsでなければ動作しない。
+	 * Ver.0．X時は警告を出しておく。
+	 * OperaのレンダリングエンジンChromeと同じ。
+	 * UAにOperaの文字ないので注意。（2016.07.27）
+	 * ex."mozilla/5.0 (windows nt 10.0; wow64) applewebkit/537.36 (khtml, like gecko) chrome/51.0.2704.106 safari/537.36 opr/38.0.2220.41" 
+	 */
+	browser_error = function(e){
+		var href = window.location.href ;
+		var ua = window.navigator.userAgent.toLowerCase();
+		if(href.indexOf('https://')<0 && ua.indexOf('chrome')>0){
+			alert(M.str.voicerec.changeserver);
+		}else{
+			alert(M.str.voicerec.changebrowser);
+		}
+	}
+		
+	/**
 	 * 録音開始
 	 * 
-	 * chromeはondataavailableが小刻みに発生する。音声データはe.dataを結合したもの。（実験から）
-	 * FirefoxはmediaRecorder.stop()呼出し後、一度だけ発生。
-	 * また、chromeはtypeが空。バイナリエディタで見るとメディア・タイプはaudio/webm
-	 * Firefoxはaudio/ogg
+	 * MediaRecorder(stream	MediaStream,options	MediaRecorderOptions)
+	 * MediaRecorderの第２引数でmimeType指定できるが、audioはChromeはaudio/webmのみ、
+	 * Firefoxはaudio/oggのみ。
+	 * ChromeはコンストラクタでmimeType指定してもondataavailableのe.data.typeが空。
+	 * 現状、指定しても意味なし。
 	 * 
+	 * ビデオの場合だがコーデック指定も可能
+	 * ex. options = {mimeType: 'video/webm, codecs=vp9'};
 	 */
 	$('#voicerec_rec').click(function(){
 		try{
 			mediaRecorder = new MediaRecorder(mediaStream);
+			/**
+			 * chromeはondataavailableが小刻みに発生する。音声データはe.dataを結合したもの。
+			 * timesliceを指定しない場合、FirefoxはmediaRecorder.stop()呼出し後一度だけ発生。
+			 * chromeはtypeが空。バイナリエディタで見るとメディア・タイプはaudio/webm
+			 * Firefoxはaudio/ogg
+			 */
 			mediaRecorder.ondataavailable = function(e) {
 				buffArray .push(e.data);
 				if('' != e.data.type){
 					dataType = e.data.type;
-					console.log("e.data.type is null" );
 				}
 				//var extension = e.data.type.substr(e.data.type.indexOf('/') + 1); // "audio/ogg"->"ogg"
 				console.log("e.data.size = " + e.data.size);
 				console.log('buffArray.length :'+ buffArray .length);
 			}
-			mediaRecorder.start();
-			limitTimerID = limit_timer();
+			var timeslice = 1000; // The number of milliseconds of data to return in a single Blob.
+			mediaRecorder.start(timeslice);
+			limitTimerID = limit_timer(timeslice);
 			/* */
 			$('#voicerec_rec').attr('disabled','disabled');
 			$('#voicerec_stop').removeAttr('disabled');
@@ -92,11 +119,9 @@ M.mod_voicerec.init = function(yui, maxduration) {
 		}
 	});
 	/**
-	 * 停止ボタン　2016.07.20時点での注意事項
-	 * 
-	 * FirefoxではmediaRecorder.stop()呼出し後にondataavailableイベントが発生する。
-	 * そのため、停止ボタン処理の中でBlobの生成は不可。
-	 * 停止ボタン処理の中はまだデータを受信していないので注意。
+	 * 停止ボタン　
+	 * start時にtimeslice指定してUTの挙動揃える。
+	 * mediaRecorder.start(timeslice);
 	 * 
 	 */
 	$('#voicerec_stop').click(function(){
@@ -115,8 +140,7 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	 * 
 	 * Blobのままアップロードするのでname属性がない。typeにはaudio/oggがブラウザにより設定されている。
 	 * FirefoxではOggフォーマットで録音され、OggはFirefox、Chrome、Operaでは再生可能。
-	 * Edge,IEはOggの再生未サポート。
-	 * BlobからFileに変換し、File.name属性に拡張子付きでアップロードしたいがBlobからFileへの変換方法不明。
+	 * Edge,IEはOgg、webmの再生未サポート。Edgeでは録音だけでなく、再生も不可。
 	 * （Blobはtype、size属性を持つ。FileはBlobを継承。name属性が追加）
 	 */
 	$("#voicerec_upload").bind("click", function(){
@@ -138,7 +162,7 @@ M.mod_voicerec.init = function(yui, maxduration) {
 		};
 		$.ajax( "./saveaudio.php", postData ).done(function( text ){
 			if(!M.str.voicerec[text]){
-				//alert(text); debug時に開ける。
+				//alert(text); //debug時に開ける。
 			}else{
 				alert(M.str.voicerec[text]);
 			}

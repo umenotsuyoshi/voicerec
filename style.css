@@ -71,6 +71,7 @@ td{
 #userrecedlist{
 	border: 0.1px solid #d3d3d3;
 	padding:5px;
+	margin-bottom:5px;
 }
 .voicerec_submitted_voice{
 	width:100%;
@@ -81,6 +82,11 @@ td{
 .teacher_comment{
 	border:solid 0.1px #d3d3d3;
 	padding:10px;
+}
+.blink_button{
+	font-style:nomal!important;
+	color:#ff599d!important;
+	/*font-size:80%!important;*/
 }
 
 /* student submit voice table header*/

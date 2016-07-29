@@ -80,12 +80,17 @@ class mod_voicerec_mod_form extends moodleform_mod {
         $mform->addElement('text', 'maxduration', get_string('maxduration', 'voicerec'), array('size'=>'16'));
         $mform->setType('maxduration', PARAM_INT);
         $mform->addHelpButton('maxduration', 'maxduration', 'voicerec');
-        $mform->setDefault('maxduration', 300);
+        $mform->setDefault('maxduration', get_config('voicerec' , 'maxduration'));
+        
         // 録音ファイルの数
-        $mform->addElement('text', 'maxnumber', get_string('maxnumber', 'voicerec'), array('size'=>'16'));
-        $mform->setType('maxnumber', PARAM_INT);
+        $options = array();
+        for ($i = 1; $i <= get_config('voicerec' , 'maxnumber'); $i++) {
+        	$options[$i] = $i;
+        }
+        $name = get_string('maxnumber', 'voicerec');
+        $mform->addElement('select', 'maxnumber', $name, $options);
         $mform->addHelpButton('maxnumber', 'maxnumber', 'voicerec');
-        $mform->setDefault('maxnumber', 0);
+        
         //提出日以降の送信を阻止する
         $mform->addElement('selectyesno', 'preventlate', get_string('preventlate', 'voicerec'));
 
@@ -104,4 +109,17 @@ class mod_voicerec_mod_form extends moodleform_mod {
         // Add standard buttons, common to all modules.
         $this->add_action_buttons();
     }
+    function validation($data, $files) {
+    	$errors = parent::validation($data, $files);
+    	$system_maxduration = 1200; // in case of admin failuer.
+    	$site_maxduration = get_config('voicerec' , 'maxduration');
+    	$maxduration = ($system_maxduration>$site_maxduration)?$site_maxduration:$system_maxduration;
+    	if(0<= $data['maxduration'] && $data['maxduration'] <= $maxduration){
+    		return $errors;
+    	}else{
+    		$error['maxduration'] = get_string('maxdurationerror', 'voicerec',$site_maxduration);
+    		return $error;
+    	}
+    }
+    
 }
