@@ -320,41 +320,22 @@ function voicerec_scale_used_anywhere($scaleid) {
  * Needed by {@link grade_update_mod_grades()}.
  *
  * @param stdClass $voicerec instance object with extra cmidnumber and modname property
- * @param bool $reset reset grades in the gradebook
+ * @param unknown $grades
  * @return void
  */
-function voicerec_grade_item_update(stdClass $voicerec, $reset=false) {
+function voicerec_grade_item_update(stdClass $voicerec, $grades=NULL) {
     global $CFG;
     require_once($CFG->libdir.'/gradelib.php');
 
     $item = array();
-    /*テンプレートの処理
-    $item['itemname'] = clean_param($voicerec->name, PARAM_NOTAGS);
-    $item['gradetype'] = GRADE_TYPE_VALUE;
-
-    if ($voicerec->grade > 0) {
-        $item['gradetype'] = GRADE_TYPE_VALUE;
-        $item['grademax']  = $voicerec->grade;
-        $item['grademin']  = 0;
-    } else if ($voicerec->grade < 0) {
-        $item['gradetype'] = GRADE_TYPE_SCALE;
-        $item['scaleid']   = -$voicerec->grade;
-    } else {
-        $item['gradetype'] = GRADE_TYPE_NONE;
-    }
-    */
-
     $item = array();
     $item['itemname'] = clean_param($voicerec->name, PARAM_NOTAGS);
     $item['gradetype'] = GRADE_TYPE_VALUE;
     $item['grademax']  = $voicerec->grade;
     $item['grademin']  = 0;
-    
-    if ($reset) {
-        $item['reset'] = true;
-    }
-    //61 function grade_update($source, $courseid, $itemtype, $itemmodule, $iteminstance, $itemnumber, $grades=NULL, $itemdetails=NULL) {
-    $update_ret = grade_update('mod/voicerec', $voicerec->course, 'mod', 'voicerec', $voicerec->id, 0, null, $item);
+    // gradelib.php:61 
+    // function grade_update($source, $courseid, $itemtype, $itemmodule, $iteminstance, $itemnumber, $grades=NULL, $itemdetails=NULL) {
+    $update_ret = grade_update('mod/voicerec', $voicerec->course, 'mod', 'voicerec', $voicerec->id, 0, $grades, $item);
 }
 
 /**
@@ -374,10 +355,6 @@ function voicerec_grade_item_delete($voicerec) {
 }
 /**
  * Return grade for given user or all users.
- * テンプレートにはない。
- * voicerec_update_gradesの処理をnanogongからコピーした際に、同時にコピー。
- * 
- * 
  * 
  * @param int $voicerecid id of voicerec
  * @param int $userid optional user id, 0 means all users
@@ -405,19 +382,11 @@ function voicerec_get_user_grades($voicerec, $userid=0) {
  * Update voicerec grades in the gradebook
  *
  * Needed by {@link grade_update_mod_grades()}.
- * テンプレートどおりの内容だったが評定が反映されないので、voicerecのソースをコピーしてみる。
  * 
  * @param stdClass $voicerec instance object with extra cmidnumber and modname property
  * @param int $userid update grade of specific user only, 0 means all participants
  */
 function voicerec_update_grades(stdClass $voicerec, $userid = 0) {
-/* テンプレートの処理
-    global $CFG, $DB;
-    require_once($CFG->libdir.'/gradelib.php');
-    // Populate array of grade objects indexed by userid.
-    $grades = array();
-    grade_update('mod/voicerec', $voicerec->course, 'mod', 'voicerec', $voicerec->id, 0, $grades);
-*/
     global $CFG, $DB;
     require_once($CFG->libdir.'/gradelib.php');
     if ($voicerec->grade == 0) {
@@ -434,8 +403,6 @@ function voicerec_update_grades(stdClass $voicerec, $userid = 0) {
     else {
         voicerec_grade_item_update($voicerec);
     }
-    
-    
 }
 
 /* File API */

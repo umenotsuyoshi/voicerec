@@ -33,7 +33,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_voicerec';
-$plugin->version = 201607281612;
+$plugin->version = 201608011440;
 $plugin->release = 'v0.1';
 $plugin->requires = 2014051200;
 $plugin->maturity = MATURITY_ALPHA;
