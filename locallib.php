@@ -74,7 +74,9 @@ function voicerec_print_rec_form($cm, $voicerec){
     $changebrowser =  get_string('changebrowser', 'voicerec');
     $remainingtime =  get_string('remainingtime', 'voicerec');
     $remainingtimeunit =  get_string('remainingtimeunit', 'voicerec');
-    
+    $checkrecording = get_string('checkrecording','voicerec');
+    $reclaber= get_string('reclabel','voicerec');
+    $stoplaber= get_string('stoplabel','voicerec');
     $sesskey = sesskey();
     echo $OUTPUT->box_start('generalbox', 'recform');
     
@@ -92,8 +94,10 @@ function voicerec_print_rec_form($cm, $voicerec){
     <div>
     <label><input type="checkbox" id="voicerec_allow">$permitbrowserrec</label>
     </div>
-    <input type="button" id="voicerec_rec" value="Rec"  disabled='disabled'/>
-    <input type="button" id="voicerec_stop" value="Stop"  disabled='disabled'/>
+    <input type="button" id="voicerec_rec" value="$reclaber"  disabled='disabled'/>
+    <input type="button" id="voicerec_stop" value="$stoplaber"  disabled='disabled'/>
+    <input type="button" id="voicerec_check" value="$checkrecording" disabled='disabled'/>
+    <audio src="" id="voicerec_recording_audio" controls><p>$usemodernbrowser</p></audio>
     <input type="button" id="voicerec_upload" value="$submissionlabel" disabled='disabled'/>
     <div>
         <div id="rectimer_block"><span>$remainingtime</span><span id="rectime_timer">{$voicerec->maxduration}</span><span>$remainingtimeunit</span></div>

@@ -33,6 +33,7 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	buffArray  = new Array();
 	var limitTimerID = 0;
 	var dataType = 'audio/webm';
+	var voicerec_recording_audio = document.getElementById('voicerec_recording_audio');
 	/**
 	 * ユーザの録音許可
 	 */
@@ -56,6 +57,8 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	    }else{
 			$('#voicerec_rec').attr('disabled','disabled');
 			$('#voicerec_stop').attr('disabled','disabled');
+			$('#voicerec_check').attr('disabled','disabled');
+			$('#voicerec_recording_audio').attr('src','');
 			$('#voicerec_upload').attr('disabled','disabled');
 	    } 
 	});
@@ -112,6 +115,8 @@ M.mod_voicerec.init = function(yui, maxduration) {
 			/* */
 			$('#voicerec_rec').attr('disabled','disabled');
 			$('#voicerec_stop').removeAttr('disabled');
+			$('#voicerec_check').attr('disabled','disabled');
+			voicerec_recording_audio.src='';
 			$('#voicerec_upload').attr('disabled','disabled');
 		}catch(e){
 			console.log(e);
@@ -133,8 +138,22 @@ M.mod_voicerec.init = function(yui, maxduration) {
 		clearTimeout(limitTimerID);
 		$('#voicerec_rec').attr('disabled','disabled');
 		$('#voicerec_stop').attr('disabled','disabled');
+		$('#voicerec_check').removeAttr('disabled');
 		$('#voicerec_upload').removeAttr('disabled');
 	}
+	/**
+	 * 確認ボタン
+	 */
+	$('#voicerec_check').click(function(){
+		blob = new Blob(buffArray , { type : dataType }); // blobオブジェクトは.typeと.sizeのみ
+		if(blob.size==0){
+			alert(M.str.voicerec.changebrowser);
+			return false;
+		}
+		var blobUrl = window.URL.createObjectURL(blob);
+		voicerec_recording_audio.src= blobUrl;
+		voicerec_recording_audio.play();
+	});
 	/**
 	 * アップロードボタン
 	 * 
@@ -143,7 +162,7 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	 * Edge,IEはOgg、webmの再生未サポート。Edgeでは録音だけでなく、再生も不可。
 	 * （Blobはtype、size属性を持つ。FileはBlobを継承。name属性が追加）
 	 */
-	$("#voicerec_upload").bind("click", function(){
+	$("#voicerec_upload").click(function(){
 		if( $('#voicerec_rec_comment').hasClass("not_changed")== true)$('#voicerec_rec_comment').val("");
 		blob = new Blob(buffArray , { type : dataType }); // blobオブジェクトは.typeと.sizeのみ
 		if(blob.size==0){
@@ -172,6 +191,8 @@ M.mod_voicerec.init = function(yui, maxduration) {
 		});
 		$('#voicerec_rec').attr('disabled','disabled');
 		$('#voicerec_stop').attr('disabled','disabled');
+		$('#voicerec_check').attr('disabled','disabled');
+		$('#voicerec_recording_audio').attr('src','');
 		$('#voicerec_upload').attr('disabled','disabled');
 	});
 	/*
