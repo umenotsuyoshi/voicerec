@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
  * Save audio file
  *
@@ -28,7 +27,6 @@
 require_once('../../config.php');
 require_once('lib.php');
 require_once('locallib.php');
-
 
 require_login();
 $id = required_param('id', PARAM_INT);

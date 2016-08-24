@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
+M.mod_voicerec = {};
+
 /**
  * The JavaScript used in the voicerec activity module
  *
@@ -24,46 +26,55 @@
  * @license    
  * @version    
  */
-M.mod_voicerec = {};
-
 M.mod_voicerec.init = function(yui, maxduration) {
 	navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
 	var mediaStream = null; // http://www.w3.org/TR/mediacapture-streams/#mediastream
 	var mediaRecorder = null;// http://www.w3.org/TR/mediastream-recording/
-	buffArray  = new Array();
+	var buffArray  = new Array();
 	var limitTimerID = 0;
+	var restart_maxduration = maxduration;
+	/*
+	 * 現在（2016.08）Chromeは、mediaRecorder.ondataavailable(e)のe.data.typeを空で呼び出す。
+	 * デフォルト値をChrome(audio/webm)にしておいて、Firefox（audio/ogg)で上書きで回避。
+	 */
 	var dataType = 'audio/webm';
 	var voicerec_recording_audio = document.getElementById('voicerec_recording_audio');
+	var voicerec_rec = document.getElementById('voicerec_rec');
+	var voicerec_stop = document.getElementById('voicerec_stop');
+	var voicerec_check = document.getElementById('voicerec_check');
+	var voicerec_recording_audio = document.getElementById('voicerec_recording_audio');
+	var voicerec_upload = document.getElementById('voicerec_upload');
+	var rectime_timer = document.getElementById('rectime_timer');
+	/*
+	 * 
+	 */
+
 	/**
 	 * ユーザの録音許可
+	 * ユーザの許可を得る必要があるのは、Firefoxだけ。
+	 * Chromeでユーザの許可を得るためのダイアログが表示されなくなり、すぐに録音が開始されるようになっている。
+	 * 許可を得ると録音開始する。
+	 * 
 	 */
-	$('#voicerec_allow').bind('click', function () {
-	    if ($(this).prop('checked')) {
-	    	try{
-	    		navigator.getUserMedia({
-	    			video : false,
-	    			audio : true
-	    		}, function(stream) {
-	    			$('#voicerec_rec').removeAttr('disabled');
-	    			mediaStream = stream;
-	    		}, function(err) {
-					console.log(e);
-	    			alert(err.name ? err.name : err);
-	    		});
-	    	}catch(e){
+	voicerec_rec.addEventListener('click', function () {
+    	try{
+    		navigator.getUserMedia({
+    			video : false,
+    			audio : true
+    		}, function(stream) {
+    			mediaStream = stream;
+    			rec_start();
+    		}, function(err) {
 				console.log(e);
-				browser_error(e);
-	    	}
-	    }else{
-			$('#voicerec_rec').attr('disabled','disabled');
-			$('#voicerec_stop').attr('disabled','disabled');
-			$('#voicerec_check').attr('disabled','disabled');
-			$('#voicerec_recording_audio').attr('src','');
-			$('#voicerec_upload').attr('disabled','disabled');
-	    } 
+    			alert(err.name ? err.name : err);
+    		});
+    	}catch(e){
+			console.log(e);
+			browser_error(e);
+    	}
 	});
 	/**
-	 * getUserMediaはChorm, Operaの場合は、httpsでなければ動作しない。
+	 * getUserMediaはChrome, Operaの場合は、httpsでなければ動作しなくなった。
 	 * Ver.0．X時は警告を出しておく。
 	 * OperaのレンダリングエンジンChromeと同じ。
 	 * UAにOperaの文字ないので注意。（2016.07.27）
@@ -83,68 +94,83 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	 * 録音開始
 	 * 
 	 * MediaRecorder(stream	MediaStream,options	MediaRecorderOptions)
-	 * MediaRecorderの第２引数でmimeType指定できるが、audioはChromeはaudio/webmのみ、
-	 * Firefoxはaudio/oggのみ。
+	 * MediaRecorderの第２引数でmimeType指定できる。
+	 * しかし、audioについては、Chromeはaudio/webmのみ、Firefoxはaudio/oggのみサポートの様。
+	 * MediaRecorder.isTypeSupported()
 	 * ChromeはコンストラクタでmimeType指定してもondataavailableのe.data.typeが空。
-	 * 現状、指定しても意味なし。
-	 * 
+	 * サポートするmimeTypeを返すAPIはなし。（W3C Working Draft 20 June 2016）
+	 * 現在は、第2パラメータを指定しても意味なし。
 	 * ビデオの場合だがコーデック指定も可能
 	 * ex. options = {mimeType: 'video/webm, codecs=vp9'};
 	 */
-	$('#voicerec_rec').click(function(){
+	function rec_start() {
+		maxduration = restart_maxduration;
+		buffArray  = new Array();
 		try{
 			mediaRecorder = new MediaRecorder(mediaStream);
 			/**
 			 * chromeはondataavailableが小刻みに発生する。音声データはe.dataを結合したもの。
 			 * timesliceを指定しない場合、FirefoxはmediaRecorder.stop()呼出し後一度だけ発生。
 			 * chromeはtypeが空。バイナリエディタで見るとメディア・タイプはaudio/webm
-			 * Firefoxはaudio/ogg
+			 * Firefoxはaudio/ogg。
+			 * 
 			 */
 			mediaRecorder.ondataavailable = function(e) {
-				buffArray .push(e.data);
+				buffArray.push(e.data);
 				if('' != e.data.type){
-					dataType = e.data.type;
+					dataType = e.data.type;　// Firefoxだけ指定してくる
 				}
 				//var extension = e.data.type.substr(e.data.type.indexOf('/') + 1); // "audio/ogg"->"ogg"
 				console.log("e.data.size = " + e.data.size);
 				console.log('buffArray.length :'+ buffArray .length);
 			}
+			/**
+			 * mediaRecorder.startの直後停止ボタンを有効にすると録音、停止と連続してボタンされ
+			 * startする前に停止処理が走行する。タイマーが止まらない。
+			 */
+			mediaRecorder.onstart = function(e) {
+				voicerec_stop.removeAttribute('disabled');
+			}
 			var timeslice = 1000; // The number of milliseconds of data to return in a single Blob.
 			mediaRecorder.start(timeslice);
-			limitTimerID = limit_timer(timeslice);
-			/* */
-			$('#voicerec_rec').attr('disabled','disabled');
-			$('#voicerec_stop').removeAttr('disabled');
-			$('#voicerec_check').attr('disabled','disabled');
+			limitTimerID = limit_timer();
+			voicerec_rec.setAttribute('disabled','disabled');
+			voicerec_check.setAttribute('disabled','disabled');
 			voicerec_recording_audio.src='';
-			$('#voicerec_upload').attr('disabled','disabled');
+			voicerec_upload.setAttribute('disabled','disabled');
+
+			/* */
 		}catch(e){
 			console.log(e);
+			clearTimeout(limitTimerID);
 			alert(M.str.voicerec.changebrowser);
 		}
-	});
+	}
 	/**
 	 * 停止ボタン　
-	 * start時にtimeslice指定してUTの挙動揃える。
+	 * start時にtimeslice指定してUAの挙動揃える。
 	 * mediaRecorder.start(timeslice);
 	 * 
 	 */
-	$('#voicerec_stop').click(function(){
+	voicerec_stop.addEventListener('click', function () {
 		stop_recording();
 	});
+	/**
+	 * 録音停止
+	 */
 	stop_recording = function(){
-		console.log("stop mediaRecorder");
-		mediaRecorder.stop();
 		clearTimeout(limitTimerID);
-		$('#voicerec_rec').attr('disabled','disabled');
-		$('#voicerec_stop').attr('disabled','disabled');
-		$('#voicerec_check').removeAttr('disabled');
-		$('#voicerec_upload').removeAttr('disabled');
+		mediaRecorder.stop();
+		voicerec_rec.removeAttribute('disabled');
+		voicerec_stop.setAttribute('disabled','disabled');
+		voicerec_check.removeAttribute('disabled');
+		voicerec_upload.removeAttribute('disabled');
+		console.log("stop mediaRecorder");
 	}
 	/**
 	 * 確認ボタン
 	 */
-	$('#voicerec_check').click(function(){
+	voicerec_check.addEventListener('click', function () {
 		blob = new Blob(buffArray , { type : dataType }); // blobオブジェクトは.typeと.sizeのみ
 		if(blob.size==0){
 			alert(M.str.voicerec.changebrowser);
@@ -157,12 +183,22 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	/**
 	 * アップロードボタン
 	 * 
-	 * Blobのままアップロードするのでname属性がない。typeにはaudio/oggがブラウザにより設定されている。
+	 * Blobのままアップロードするのでname属性がない。typeにはaudio/ogg（Firefoxの場合）
+	 * がブラウザにより設定されている。
 	 * FirefoxではOggフォーマットで録音され、OggはFirefox、Chrome、Operaでは再生可能。
 	 * Edge,IEはOgg、webmの再生未サポート。Edgeでは録音だけでなく、再生も不可。
 	 * （Blobはtype、size属性を持つ。FileはBlobを継承。name属性が追加）
+	 * 
+	 * https://developer.mozilla.org/ja/docs/Web/API/FormData
+	 * のブラウザ実装状況の部分要確認。元は空文字が送信されていた。
+	 * 今はFormDataにblobをappendした場合、"blob"がファイル名として送信される。
+	 * 
+	 *  Formをsubmitするとファイルシステムにアクセスしエラーとなる。
+	 *  実際にファイルシステム上からファイルをアップロードしようとしている模様。
+	 *  BlobからFileをnewしようとするとTypeError: Value can't be converted to a dictionary.が発生
+	 *  
 	 */
-	$("#voicerec_upload").click(function(){
+	voicerec_upload.addEventListener('click', function () {
 		if( $('#voicerec_rec_comment').hasClass("not_changed")== true)$('#voicerec_rec_comment').val("");
 		blob = new Blob(buffArray , { type : dataType }); // blobオブジェクトは.typeと.sizeのみ
 		if(blob.size==0){
@@ -183,29 +219,40 @@ M.mod_voicerec.init = function(yui, maxduration) {
 			if(!M.str.voicerec[text]){
 				//alert(text); //debug時に開ける。
 			}else{
+				//alert(text); //debug時に開ける。
 				alert(M.str.voicerec[text]);
 			}
 			console.log( text );
 			location.reload();
-			$('#voicerec_allow').prop('checked',false);
 		});
-		$('#voicerec_rec').attr('disabled','disabled');
-		$('#voicerec_stop').attr('disabled','disabled');
-		$('#voicerec_check').attr('disabled','disabled');
-		$('#voicerec_recording_audio').attr('src','');
-		$('#voicerec_upload').attr('disabled','disabled');
+		voicerec_rec.removeAttribute('disabled');
+		voicerec_stop.setAttribute('disabled','disabled');
+		voicerec_check.setAttribute('disabled','disabled');
+		voicerec_recording_audio.src='';
+		voicerec_upload.setAttribute('disabled','disabled');
 	});
-	/*
-	 * ユーザがファイルを選択したらユーザアップロードボタンを有効にする。
-	 * 
-	 */
-	$('#voicerecfile').on("change", function() {
-        var file = this.files[0];
-        if(file != null) {
-            console.log(file.name); 
-            $('#voicerec_user_upload').removeAttr('disabled');
-        }
-    });
+	/**
+	 * 録音制限時間タイマー
+     */
+	limit_timer = function(){
+		maxduration--;
+		$('#rectime_timer').text(maxduration);
+		if(maxduration <= 0){
+			stop_recording();
+			alert(M.str.voicerec.timeoutmessage);
+			return;
+		}
+		if(maxduration <= 10){
+			$('#rectime_timer').css('color','red!important');
+		}
+		console.log(maxduration);
+		limitTimerID = setTimeout(limit_timer, 1000);
+	}
+
+	
+	
+	/* 以下mod voicerec固有部分 */
+	
 	/*
 	 * 録音コメント
 	 */
@@ -228,21 +275,6 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	$('.voicerec_editgrade_button').on("click",function(){
 		location = $(this).attr('action');
 	});
-	limit_timer = function(){
-		maxduration--;
-		$('#rectime_timer').text(maxduration);
-		if(maxduration <= 0){
-			stop_recording();
-			alert(M.str.voicerec.timeoutmessage);
-			return;
-		}
-		if(maxduration <= 10){
-			$('#rectime_timer').css('color','red!important');
-		}
-		console.log(maxduration);
-		limitTimerID = setTimeout(limit_timer, 1000);
-	}
-
 } 
 
 

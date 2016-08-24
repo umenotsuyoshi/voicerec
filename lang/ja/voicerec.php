@@ -26,9 +26,9 @@ defined('MOODLE_INTERNAL') || die();
 
 
 $string['allstudents'] = 'すべての受講生';
+$string['audiotagsupportneeded'] = '音声を再生するには、audioタグをサポートしたブラウザが必要です。';
 $string['availabledate'] = '開始日時';
 $string['backtolist'] = '受講生リストに戻る';
-$string['cannnotplayonyourbrowser'] = '音声を再生するには、audioタグをサポートしたブラウザが必要です。';
 $string['cannotsumit'] = '提出できません。学生権限で試してみてください。';
 $string['changebrowser'] = 'このブラウザでは録音できませんでした。Chrome、Firefox、Operaなどの最新バージョンで試してみてください。';
 $string['changeserver'] = 'Chrome、Operaはセキュアなサーバ（https）からしか録音できません。管理者に相談してください。';

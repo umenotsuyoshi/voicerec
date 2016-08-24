@@ -26,9 +26,9 @@ defined('MOODLE_INTERNAL') || die();
 
 
 $string['allstudents'] = 'All students';
+$string['audiotagsupportneeded'] = 'Use modern browser';
 $string['availabledate'] = 'Available from';
 $string['backtolist'] = 'Back to the list of students';
-$string['cannnotplayonyourbrowser'] = 'Use modern browser';
 $string['cannotsumit'] = 'You cannot submit. Try student role.';
 $string['changebrowser'] = 'Use modern browser.';
 $string['changeserver'] = 'Chrome or Opera can\'t work from https server. Use Firefox.';

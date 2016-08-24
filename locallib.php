@@ -66,9 +66,7 @@ function voicerec_print_rec_form($cm, $voicerec){
     $usemodernbrowser = get_string('usemodernbrowser', 'voicerec');
     $checkmikvolume = get_string('checkmikvolume', 'voicerec');
     $startpermitbrowserrec = get_string('startpermitbrowserrec', 'voicerec');
-    $youcanuploadfromhere = get_string('youcanuploadfromhere', 'voicerec');
     $inputrectitle = get_string('inputrectitle', 'voicerec');
-    $uploadmanualy = get_string('uploadmanualy', 'voicerec');
     $submissionlabel = get_string('submissionlabel', 'voicerec');
     $permitbrowserrec = get_string('permitbrowserrec', 'voicerec');
     $changebrowser =  get_string('changebrowser', 'voicerec');
@@ -91,10 +89,7 @@ function voicerec_print_rec_form($cm, $voicerec){
     <li>$checkmikvolume</li>
     <li>$startpermitbrowserrec</li>
     </ol>
-    <div>
-    <label><input type="checkbox" id="voicerec_allow">$permitbrowserrec</label>
-    </div>
-    <input type="button" id="voicerec_rec" value="$reclaber"  disabled='disabled'/>
+    <input type="button" id="voicerec_rec" value="$reclaber" />
     <input type="button" id="voicerec_stop" value="$stoplaber"  disabled='disabled'/>
     <input type="button" id="voicerec_check" value="$checkrecording" disabled='disabled'/>
     <audio src="" id="voicerec_recording_audio" controls><p>$usemodernbrowser</p></audio>
@@ -102,12 +97,7 @@ function voicerec_print_rec_form($cm, $voicerec){
     <div>
         <div id="rectimer_block"><span>$remainingtime</span><span id="rectime_timer">{$voicerec->maxduration}</span><span>$remainingtimeunit</span></div>
     </div>
-    <div id='alternate_upload'>
-    <h3>$youcanuploadfromhere</h3>
     <input type="hidden" name="id" value="$cm->id"/>
-    <input type="file" name="voicerec_upload_file" id="voicerecfile"/>
-    <input disabled='disabled' id="voicerec_user_upload" type="submit" value="$uploadmanualy"/>
-    </div>
     <input type="hidden" name="sesskey" value="$sesskey" />
     </form>
 EOD;
@@ -272,7 +262,7 @@ function voicerec_print_audiotags($context, $voicerec, $userid=0){
     $rectime = get_string('rectime', 'voicerec');
     $rectitle = get_string('rectitle', 'voicerec');
     $submittedvoice = get_string('submittedvoice', 'voicerec');
-    $cannnotplayonyourbrowser = get_string('cannnotplayonyourbrowser','voicerec');
+    $audiotagsupportneeded = get_string('audiotagsupportneeded','voicerec');
     echo "<table class='voicerec_submitted_voice'><tr><th>$rectitle</th><th>$rectime</th><th>$submittedvoice</th></tr>";
     foreach ($voicerecaudios as $voicerecaudio) {
         $filename = $voicerecaudio->name;
@@ -283,7 +273,8 @@ function voicerec_print_audiotags($context, $voicerec, $userid=0){
         $time = userdate($voicerecaudio->timecreated);
         $relativepath = "/$context->id/mod_voicerec/audio/$voicerec->id/$filename";
         $url = $CFG->wwwroot . '/pluginfile.php?file=' . $relativepath;
-        echo "<tr><td>{$voicerecaudio->title}</td><td {$latesubmit}>$time}</td><td><audio src='{$url}' controls><p>{$cannnotplayonyourbrowser}</p></audio></td></tr>";
+        echo "<tr><td>{$voicerecaudio->title}</td><td {$latesubmit}>$time</td><td>
+        <audio src='{$url}' controls><p>{audiotagsupportneeded}</p></audio></td></tr>";
     }
     echo "</table>";
     echo $OUTPUT->box_end();
@@ -291,7 +282,8 @@ function voicerec_print_audiotags($context, $voicerec, $userid=0){
 /**
  * 
  * 
- */function voicerec_print_backto_list(){
+ */
+ function voicerec_print_backto_list(){
     global $PAGE;
     $backtolist = get_string('backtolist', 'voicerec');
     echo '<input class="backto_list" type="button" onclick="location.href=\''.$PAGE->url.'\'" value="'.$backtolist.'">';
