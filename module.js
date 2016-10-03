@@ -45,6 +45,19 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	var voicerec_recording_audio = document.getElementById('voicerec_recording_audio');
 	var voicerec_upload = document.getElementById('voicerec_upload');
 	var rectime_timer = document.getElementById('rectime_timer');
+	var rec_level_meter = document.getElementById("rec_level_meter");
+	var rlmeter_context = rec_level_meter.getContext("2d");
+	var meter_width = rec_level_meter.width;
+	var meter_height = rec_level_meter.height;
+	var gradient = rlmeter_context.createLinearGradient(0,0,0,meter_height);
+	var audioBuffer;
+    gradient.addColorStop(0.99,'#00ff00');
+    gradient.addColorStop(0.02,'#0000ff');
+    gradient.addColorStop(0.01,'#ff0000');
+	var audioContext = new AudioContext();
+	var sourceNode = null;
+	var analyser = null;
+
 	/*
 	 * 
 	 */
@@ -63,6 +76,33 @@ M.mod_voicerec.init = function(yui, maxduration) {
     			audio : true
     		}, function(stream) {
     			mediaStream = stream;
+    			sourceNode = audioContext.createMediaStreamSource(stream);
+    		    analyser = audioContext.createAnalyser();
+    		    analyser.smoothingTimeConstant = 0.3;
+    		    analyser.fftSize = 1024;
+    		    sourceNode.connect(analyser);
+    		    analyser.connect(audioContext.destination);
+    		    function　dispPeakMeter() {
+    		        var array =  new Uint8Array(analyser.frequencyBinCount);
+    		        analyser.getByteFrequencyData(array);
+    		        var max = getMaxVolume(array);
+    		        max = (max*meter_height)/255;
+    		        rlmeter_context.clearRect(0, 0, meter_width, meter_height);
+    		        rlmeter_context.fillStyle=gradient;
+    		        rlmeter_context.fillRect(0,meter_height - max,meter_width,max);
+    		        function getMaxVolume(array) {
+    		            var length = array.length;
+    		    		var max = 0; // 255
+    		            for (var i = 0; i < length; i++) {
+    		                if(max < array[i])max=array[i];
+    		            }
+    		            return max;
+    		        }
+        		    requestID = requestAnimationFrame(dispPeakMeter);
+    		    }
+    		    dispPeakMeter();
+    		    // ハウリングするので停止
+    		    //sourceNode.connect(audioContext.destination);
     			rec_start();
     		}, function(err) {
 				console.log(e);
@@ -161,6 +201,7 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	stop_recording = function(){
 		clearTimeout(limitTimerID);
 		mediaRecorder.stop();
+		mediaStream.getAudioTracks()[0].stop();
 		voicerec_rec.removeAttribute('disabled');
 		voicerec_stop.setAttribute('disabled','disabled');
 		voicerec_check.removeAttribute('disabled');

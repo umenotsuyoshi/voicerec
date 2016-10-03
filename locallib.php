@@ -89,6 +89,7 @@ function voicerec_print_rec_form($cm, $voicerec){
     <li>$checkmikvolume</li>
     <li>$startpermitbrowserrec</li>
     </ol>
+    <canvas id="rec_level_meter" width="10" height="29"></canvas>
     <input type="button" id="voicerec_rec" value="$reclaber" />
     <input type="button" id="voicerec_stop" value="$stoplaber"  disabled='disabled'/>
     <input type="button" id="voicerec_check" value="$checkrecording" disabled='disabled'/>

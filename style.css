@@ -112,3 +112,7 @@ td{
 #gradeform .voicerec_submitted_voice td{
 	/*border:solid 0.1px #d3d3d3;*/
 }
+#rec_level_meter{
+	margin-bottom:-4px;
+}
+
