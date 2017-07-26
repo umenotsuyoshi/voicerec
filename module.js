@@ -38,22 +38,22 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	 * デフォルト値をChrome(audio/webm)にしておいて、Firefox（audio/ogg)で上書きで回避。
 	 */
 	var dataType = 'audio/webm';
-	var voicerec_recording_audio = document.getElementById('voicerec_recording_audio');
-	var voicerec_rec = document.getElementById('voicerec_rec');
-	var voicerec_stop = document.getElementById('voicerec_stop');
-	var voicerec_check = document.getElementById('voicerec_check');
-	var voicerec_recording_audio = document.getElementById('voicerec_recording_audio');
-	var voicerec_upload = document.getElementById('voicerec_upload');
-	var rectime_timer = document.getElementById('rectime_timer');
 	var rec_level_meter = document.getElementById("rec_level_meter");
-	var rlmeter_context = rec_level_meter.getContext("2d");
-	var meter_width = rec_level_meter.width;
-	var meter_height = rec_level_meter.height;
-	var gradient = rlmeter_context.createLinearGradient(0,0,0,meter_height);
-	var audioBuffer;
+	var rlmeter_context=null; 
+	var meter_width=null;
+	var meter_height=null;
+	var gradient=null;
+	// レベルメータ関連 録音数がMAXになると録音ツール類が表示されなくなるため、UI要素がない場合の判定要
+	if(rec_level_meter != null){
+		rlmeter_context = rec_level_meter.getContext("2d");
+		meter_width = rec_level_meter.width;
+		meter_height = rec_level_meter.height;
+		gradient = rlmeter_context.createLinearGradient(0,0,0,meter_height);
     gradient.addColorStop(0.99,'#00ff00');
     gradient.addColorStop(0.02,'#0000ff');
     gradient.addColorStop(0.01,'#ff0000');
+	}
+    var audioBuffer;
 	var audioContext = new AudioContext();
 	var sourceNode = null;
 	var analyser = null;
@@ -69,7 +69,7 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	 * 許可を得ると録音開始する。
 	 * 
 	 */
-	voicerec_rec.addEventListener('click', function () {
+	$("#voicerec_rec").on('click', function () {
     	try{
     		navigator.getUserMedia({
     			video : false,
@@ -160,24 +160,21 @@ M.mod_voicerec.init = function(yui, maxduration) {
 				if('' != e.data.type){
 					dataType = e.data.type;　// Firefoxだけ指定してくる
 				}
-				//var extension = e.data.type.substr(e.data.type.indexOf('/') + 1); // "audio/ogg"->"ogg"
-				console.log("e.data.size = " + e.data.size);
-				console.log('buffArray.length :'+ buffArray .length);
 			}
 			/**
 			 * mediaRecorder.startの直後停止ボタンを有効にすると録音、停止と連続してボタンされ
 			 * startする前に停止処理が走行する。タイマーが止まらない。
 			 */
 			mediaRecorder.onstart = function(e) {
-				voicerec_stop.removeAttribute('disabled');
+				$("#voicerec_stop").removeAttr('disabled');
 			}
 			var timeslice = 1000; // The number of milliseconds of data to return in a single Blob.
 			mediaRecorder.start(timeslice);
 			limitTimerID = limit_timer();
-			voicerec_rec.setAttribute('disabled','disabled');
-			voicerec_check.setAttribute('disabled','disabled');
-			voicerec_recording_audio.src='';
-			voicerec_upload.setAttribute('disabled','disabled');
+			$("#voicerec_rec").attr('disabled','disabled');
+			$("#voicerec_check").attr('disabled','disabled');
+			$("#voicerec_recording_audio")[0].src='';
+			$("#voicerec_upload").attr('disabled','disabled');
 
 			/* */
 		}catch(e){
@@ -192,7 +189,7 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	 * mediaRecorder.start(timeslice);
 	 * 
 	 */
-	voicerec_stop.addEventListener('click', function () {
+	$("#voicerec_stop").on('click', function () {
 		stop_recording();
 	});
 	/**
@@ -202,24 +199,23 @@ M.mod_voicerec.init = function(yui, maxduration) {
 		clearTimeout(limitTimerID);
 		mediaRecorder.stop();
 		mediaStream.getAudioTracks()[0].stop();
-		voicerec_rec.removeAttribute('disabled');
-		voicerec_stop.setAttribute('disabled','disabled');
-		voicerec_check.removeAttribute('disabled');
-		voicerec_upload.removeAttribute('disabled');
-		console.log("stop mediaRecorder");
+		$("#voicerec_rec").removeAttr('disabled');
+		$("#voicerec_stop").attr('disabled','disabled');
+		$("#voicerec_check").removeAttr('disabled');
+		$("#voicerec_upload").removeAttr('disabled');
 	}
 	/**
 	 * 確認ボタン
 	 */
-	voicerec_check.addEventListener('click', function () {
+	$("#voicerec_check").on('click', function () {
 		blob = new Blob(buffArray , { type : dataType }); // blobオブジェクトは.typeと.sizeのみ
 		if(blob.size==0){
 			alert(M.str.voicerec.changebrowser);
 			return false;
 		}
 		var blobUrl = window.URL.createObjectURL(blob);
-		voicerec_recording_audio.src= blobUrl;
-		voicerec_recording_audio.play();
+		$("#voicerec_recording_audio")[0].src= blobUrl;
+		$("#voicerec_recording_audio")[0].play();
 	});
 	/**
 	 * アップロードボタン
@@ -239,7 +235,7 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	 *  BlobからFileをnewしようとするとTypeError: Value can't be converted to a dictionary.が発生
 	 *  
 	 */
-	voicerec_upload.addEventListener('click', function () {
+	$("#voicerec_upload").on('click', function () {
 		if( $('#voicerec_rec_comment').hasClass("not_changed")== true)$('#voicerec_rec_comment').val("");
 		blob = new Blob(buffArray , { type : dataType }); // blobオブジェクトは.typeと.sizeのみ
 		if(blob.size==0){
@@ -266,11 +262,11 @@ M.mod_voicerec.init = function(yui, maxduration) {
 			console.log( text );
 			location.reload();
 		});
-		voicerec_rec.removeAttribute('disabled');
-		voicerec_stop.setAttribute('disabled','disabled');
-		voicerec_check.setAttribute('disabled','disabled');
-		voicerec_recording_audio.src='';
-		voicerec_upload.setAttribute('disabled','disabled');
+		$("#voicerec_rec").removeAttr('disabled');
+		$("#voicerec_stop").attr('disabled','disabled');
+		$("#voicerec_check").attr('disabled','disabled');
+		$("#voicerec_recording_audio")[0].src='';
+		$("#voicerec_upload").attr('disabled','disabled');
 	});
 	/**
 	 * 録音制限時間タイマー
