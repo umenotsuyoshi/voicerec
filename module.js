@@ -33,6 +33,7 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	var buffArray  = new Array();
 	var limitTimerID = 0;
 	var restart_maxduration = maxduration;
+	var rec_satus = false;
 	/*
 	 * 現在（2016.08）Chromeは、mediaRecorder.ondataavailable(e)のe.data.typeを空で呼び出す。
 	 * デフォルト値をChrome(audio/webm)にしておいて、Firefox（audio/ogg)で上書きで回避。
@@ -164,13 +165,15 @@ M.mod_voicerec.init = function(yui, maxduration) {
 			/**
 			 * mediaRecorder.startの直後停止ボタンを有効にすると録音、停止と連続してボタンされ
 			 * startする前に停止処理が走行する。タイマーが止まらない。
+			 * onstart発生後でもタイマーが停止しない場合があり（録音は停止）、録音中フラグを設定。
 			 */
 			mediaRecorder.onstart = function(e) {
 				$("#voicerec_stop").removeAttr('disabled');
+				rec_satus = true;
+				limitTimerID = limit_timer();
 			}
 			var timeslice = 1000; // The number of milliseconds of data to return in a single Blob.
 			mediaRecorder.start(timeslice);
-			limitTimerID = limit_timer();
 			$("#voicerec_rec").attr('disabled','disabled');
 			$("#voicerec_check").attr('disabled','disabled');
 			$("#voicerec_recording_audio")[0].src='';
