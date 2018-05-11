@@ -45,20 +45,58 @@ class backup_voicerec_activity_structure_step extends backup_activity_structure_
         // Get know if we are including userinfo.
         $userinfo = $this->get_setting_value('userinfo');
 
+        // https://docs.moodle.org/dev/Backup_2.0_for_developers
         // Define the root element describing the voicerec instance.
         $voicerec = new backup_nested_element('voicerec', array('id'), array(
-            'name', 'intro', 'introformat', 'grade'));
+            'course', 'name', 'intro', 'introformat', 'timeavailable',
+            'timedue', 'grade', 'maxduration', 'maxnumber', 'preventlate',
+            'permission', 'timecreated', 'timemodified'));
 
-        // If we had more elements, we would build the tree here.
+        $messages = new backup_nested_element('messages');
+
+        $message = new backup_nested_element('message', array('id'), array(
+            'userid', 'message', 'supplement', 'supplementformat',
+            'audio', 'comments', 'commentsformat',
+            'commentedby', 'grade', 'timestamp', 'locked'));
+
+        $audios = new backup_nested_element('audios');
+
+        $audio = new backup_nested_element('audio', array('id'), array(
+            'userid', 'type', 'title', 'name', 'timecreated'));
+
+        // Build the tree
+        $voicerec->add_child($messages);
+        $messages->add_child($message);
+        $voicerec->add_child($audios);
+        $audios->add_child($audio);
 
         // Define data sources.
         $voicerec->set_source_table('voicerec', array('id' => backup::VAR_ACTIVITYID));
+		if ($userinfo) {
+		    $message->set_source_sql('
+                SELECT *
+                  FROM {voicerec_messages}
+                  WHERE voicerecid = ?',
+		        array(backup::VAR_PARENTID));
+		    $audio->set_source_table('voicerec_audios', array('voicerecid' => backup::VAR_PARENTID));
 
+		}
         // If we were referring to other tables, we would annotate the relation
         // with the element's annotate_ids() method.
 
+		// Define id annotations
+		$voicerec->annotate_ids('scale', 'grade');
+		$message->annotate_ids('user', 'userid');
+		$message->annotate_ids('user', 'commentedby');
+		$audio->annotate_ids('user', 'userid');
+
+
         // Define file annotations (we do not use itemid in this example).
-        $voicerec->annotate_files('mod_voicerec', 'intro', null);
+		$voicerec->annotate_files('mod_voicerec', 'intro', null);
+		$message->annotate_files('mod_voicerec', 'message', 'id');
+        $voicerec->annotate_files('mod_voicerec', 'audio', 'id');
+
+
 
         // Return the root element (voicerec), wrapped into standard activity structure.
         return $this->prepare_activity_structure($voicerec);

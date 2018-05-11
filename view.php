@@ -33,7 +33,7 @@ $id = optional_param('id', 0, PARAM_INT); // course_modulesテーブルのID
 $v  = optional_param('v', 0, PARAM_INT);  // 
 
 // course_modules のレコードを取得する。
-// 取得したcourse_modulesにコースのIDが含まれていうるので、コーステーブルのレコードを取得
+// 取得したcourse_modulesにコースのIDが含まれているので、コーステーブルのレコードを取得
 // voicerecモジュールテーブル中でインスタンスの情報取得
 if ($id) {
     $cm         = get_coursemodule_from_id('voicerec', $id, 0, false, MUST_EXIST);

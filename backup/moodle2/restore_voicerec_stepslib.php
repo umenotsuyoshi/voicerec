@@ -41,17 +41,19 @@ class restore_voicerec_activity_structure_step extends restore_activity_structur
     protected function define_structure() {
 
         $paths = array();
+        $userinfo = $this->get_setting_value('userinfo');
+
         $paths[] = new restore_path_element('voicerec', '/activity/voicerec');
+        if ($userinfo) {
+            $paths[] = new restore_path_element('voicerec_message', '/activity/voicerec/messages/message');
+            $paths[] = new restore_path_element('voicerec_audio', '/activity/voicerec/audios/audio');
+        }
+
 
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
     }
 
-    /**
-     * Process the given restore path element data
-     *
-     * @param array $data parsed element data
-     */
     protected function process_voicerec($data) {
         global $DB;
 
@@ -59,22 +61,46 @@ class restore_voicerec_activity_structure_step extends restore_activity_structur
         $oldid = $data->id;
         $data->course = $this->get_courseid();
 
-        if (empty($data->timecreated)) {
-            $data->timecreated = time();
-        }
-
-        if (empty($data->timemodified)) {
-            $data->timemodified = time();
-        }
-
-        if ($data->grade < 0) {
-            // Scale found, get mapping.
+        $data->timeavailable = $this->apply_date_offset($data->timeavailable);
+        $data->timedue = $this->apply_date_offset($data->timedue);
+        if ($data->grade < 0) { // scale found, get mapping
             $data->grade = -($this->get_mappingid('scale', abs($data->grade)));
         }
+        $data->timecreated = $this->apply_date_offset($data->timecreated);
+        $data->timemodified = $this->apply_date_offset($data->timemodified);
 
-        // Create the voicerec instance.
+        // insert the voicerec record
         $newitemid = $DB->insert_record('voicerec', $data);
+        // immediately after inserting "activity" record, call this
         $this->apply_activity_instance($newitemid);
+    }
+
+    protected function process_voicerec_message($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+
+        $data->voicerecid = $this->get_new_parentid('voicerec');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->commentedby = $this->get_mappingid('user', $data->commentedby);
+        $data->timestamp = $this->apply_date_offset($data->timestamp);
+
+        $newitemid = $DB->insert_record('voicerec_messages', $data);
+        $this->set_mapping('voicerec_message', $oldid, $newitemid, true);
+    }
+
+    protected function process_voicerec_audio($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+
+        $data->voicerecid = $this->get_new_parentid('voicerec');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->timecreated = $this->apply_date_offset($data->timecreated);
+
+        $newitemid = $DB->insert_record('voicerec_audios', $data);
     }
 
     /**
@@ -83,5 +109,8 @@ class restore_voicerec_activity_structure_step extends restore_activity_structur
     protected function after_execute() {
         // Add voicerec related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_voicerec', 'intro', null);
+        $this->add_related_files('mod_voicerec', 'message', 'voicerec_message');
+        $this->add_related_files('mod_voicerec', 'audio', 'voicerec');
+
     }
 }

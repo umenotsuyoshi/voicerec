@@ -62,6 +62,7 @@ class restore_voicerec_activity_task extends restore_activity_task {
         $contents = array();
 
         $contents[] = new restore_decode_content('voicerec', array('intro'), 'voicerec');
+        $contents[] = new restore_decode_content('voicerec_messages', array('supplement', 'comments'), 'voicerec_message');
 
         return $contents;
     }
@@ -73,8 +74,8 @@ class restore_voicerec_activity_task extends restore_activity_task {
     static public function define_decode_rules() {
         $rules = array();
 
-        $rules[] = new restore_decode_rule('voicerecVIEWBYID', '/mod/voicerec/view.php?id=$1', 'course_module');
-        $rules[] = new restore_decode_rule('voicerecINDEX', '/mod/voicerec/index.php?id=$1', 'course');
+        $rules[] = new restore_decode_rule('VOICERECVIEWBYID', '/mod/voicerec/view.php?id=$1', 'course_module');
+        $rules[] = new restore_decode_rule('VOICERECINDEX', '/mod/voicerec/index.php?id=$1', 'course');
 
         return $rules;
 

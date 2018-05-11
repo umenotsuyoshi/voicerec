@@ -63,11 +63,11 @@ class backup_voicerec_activity_task extends backup_activity_task {
 
         // Link to the list of voicerecs.
         $search = '/('.$base.'\/mod\/voicerec\/index.php\?id\=)([0-9]+)/';
-        $content = preg_replace($search, '$@voicerecINDEX*$2@$', $content);
+        $content = preg_replace($search, '$@VOICERECINDEX*$2@$', $content);
 
         // Link to voicerec view by moduleid.
         $search = '/('.$base.'\/mod\/voicerec\/view.php\?id\=)([0-9]+)/';
-        $content = preg_replace($search, '$@voicerecVIEWBYID*$2@$', $content);
+        $content = preg_replace($search, '$@VOICERECVIEWBYID*$2@$', $content);
 
         return $content;
     }
