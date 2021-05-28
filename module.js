@@ -72,10 +72,10 @@ M.mod_voicerec.init = function(yui, maxduration) {
 	 */
 	$("#voicerec_rec").on('click', function () {
     	try{
-    		navigator.getUserMedia({
+			navigator.mediaDevices.getUserMedia({
     			video : false,
     			audio : true
-    		}, function(stream) {
+			}).then(function (stream) {
     			mediaStream = stream;
     			sourceNode = audioContext.createMediaStreamSource(stream);
     		    analyser = audioContext.createAnalyser();
